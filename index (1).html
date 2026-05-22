@@ -1,0 +1,1504 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Critter Spotter Portrait Gallery</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2933;
+      --muted: #65717f;
+      --line: #d8dee6;
+      --line-strong: #b9c2cd;
+      --panel: #ffffff;
+      --field: #f7f9fb;
+      --page: #eef2f6;
+      --accent: #126b76;
+      --accent-soft: #e3f0f1;
+      --accent-ink: #ffffff;
+      --gold: #c89211;
+      --gold-soft: #fbf0d2;
+      --danger: #9b2f2f;
+      --shadow: 0 10px 28px rgba(31, 41, 51, 0.12);
+      --shadow-sm: 0 2px 10px rgba(31, 41, 51, 0.06);
+      --radius: 6px;
+      --tap: 38px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* ----- Sticky header ----- */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: saturate(140%) blur(4px);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 3px 14px rgba(31, 41, 51, 0.08);
+    }
+
+    .bar {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 12px 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    /* Row 1: brand + global controls */
+    .row-brand {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand { min-width: 0; }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .meta {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .meta strong { color: var(--ink); }
+
+    .global-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Row 2: quick-filter preset chips */
+    .row-presets {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .preset-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-right: 2px;
+    }
+
+    /* Row 3: filter inputs */
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(220px, 2.4fr) repeat(5, minmax(108px, 1fr)) minmax(86px, 0.8fr) minmax(86px, 0.8fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+    .filters.has-district {
+      grid-template-columns: minmax(220px, 2.4fr) repeat(6, minmax(100px, 1fr)) minmax(80px, 0.7fr) minmax(80px, 0.7fr) auto;
+    }
+
+    .field { min-width: 0; }
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 5px;
+    }
+    input, select {
+      width: 100%;
+      height: var(--tap);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--field);
+      color: var(--ink);
+      font-size: 14px;
+      padding: 0 10px;
+      font-family: inherit;
+    }
+    select { padding-right: 24px; }
+    input:focus, select:focus, button:focus-visible {
+      outline: 2px solid rgba(18, 107, 118, 0.45);
+      outline-offset: 1px;
+      border-color: var(--accent);
+    }
+
+    .search-wrap { position: relative; }
+    .search-wrap input {
+      padding-left: 34px;
+    }
+    .search-wrap::before {
+      content: "";
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px; height: 14px;
+      border: 2px solid var(--muted);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .search-wrap::after {
+      content: "";
+      position: absolute;
+      left: 22px;
+      top: calc(50% + 5px);
+      width: 7px; height: 2px;
+      background: var(--muted);
+      transform: rotate(45deg);
+      transform-origin: left center;
+      pointer-events: none;
+    }
+
+    /* Row 4: chip groups (generation / caucus) */
+    .row-chips {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .chip-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .chip-group-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-right: 4px;
+    }
+
+    /* ----- Generic buttons / chips ----- */
+    button {
+      height: var(--tap);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--ink);
+      font-size: 14px;
+      padding: 0 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    button:hover { border-color: var(--accent); }
+
+    .icon-btn {
+      width: var(--tap);
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .chip {
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+    .chip:hover { border-color: var(--accent); }
+    .chip.is-active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-ink);
+    }
+    .chip.is-active:hover { filter: brightness(1.05); }
+    .chip .chip-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+    }
+    .chip.preset.party-D .chip-dot { background: #1f6fb2; }
+    .chip.preset.party-R .chip-dot { background: #b33a35; }
+    .chip.preset.no-dot .chip-dot { display: none; }
+    .chip.is-active .chip-dot { background: rgba(255,255,255,0.9); }
+
+    /* Saved-view button */
+    .saved-view-wrap { position: relative; }
+    .saved-view-btn {
+      width: var(--tap);
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+      font-size: 18px;
+      color: var(--muted);
+    }
+    .saved-view-btn.has-saved { color: var(--gold); border-color: var(--gold); background: var(--gold-soft); }
+    .saved-view-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 6px;
+      min-width: 200px;
+      display: grid;
+      gap: 2px;
+      z-index: 20;
+    }
+    .saved-view-menu button {
+      height: 36px;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      padding: 0 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 100%;
+    }
+    .saved-view-menu button:hover {
+      background: var(--accent-soft);
+      border-color: transparent;
+    }
+    .saved-view-menu button:disabled {
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+    .saved-view-menu button:disabled:hover { background: transparent; }
+
+    /* Active-filter pills bar */
+    .pills-bar {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 18px 12px;
+      display: none;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .pills-bar.visible { display: flex; }
+    .pills-summary {
+      font-size: 13px;
+      color: var(--ink);
+      font-weight: 600;
+      margin-right: 4px;
+    }
+    .pills-summary .muted { color: var(--muted); font-weight: 400; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 26px;
+      padding: 0 4px 0 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid rgba(18, 107, 118, 0.18);
+    }
+    .pill button {
+      all: unset;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: inline-grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      color: var(--accent);
+      opacity: 0.7;
+    }
+    .pill button:hover { opacity: 1; background: rgba(18, 107, 118, 0.12); }
+    .clear-all {
+      height: 26px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .clear-all:hover { color: var(--accent); border-color: var(--accent); }
+
+    .filter-toggle { display: none; }
+
+    /* ----- Grid ----- */
+    main {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+
+    .card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--panel);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(31, 41, 51, 0.10);
+      border-color: var(--line-strong);
+    }
+    .card:focus-visible {
+      outline: 2px solid rgba(18, 107, 118, 0.45);
+      outline-offset: 2px;
+    }
+    .photo {
+      width: 100%;
+      aspect-ratio: 45 / 55;
+      display: block;
+      object-fit: cover;
+      background: #d7dde5;
+    }
+    .info {
+      padding: 10px;
+      display: grid;
+      gap: 5px;
+    }
+    .name {
+      min-height: 36px;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+    .seat {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .badge {
+      min-width: 24px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 4px;
+      display: inline-grid;
+      place-items: center;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 12px;
+      flex: 0 0 auto;
+    }
+    .subline {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+    .party-D { background: #1f6fb2; }
+    .party-R { background: #b33a35; }
+    .party-I { background: #5d6470; }
+
+    .empty {
+      display: none;
+      padding: 44px 12px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    /* ----- Detail dialog ----- */
+    .dialog {
+      position: fixed;
+      inset: 0;
+      display: none;
+      z-index: 30;
+      background: rgba(22, 28, 35, 0.62);
+      padding: 24px;
+    }
+    .dialog.open { display: grid; place-items: center; }
+    .detail {
+      width: min(860px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      display: grid;
+      grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+      background: var(--panel);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .detail img {
+      width: 100%;
+      height: 100%;
+      max-height: calc(100vh - 48px);
+      object-fit: cover;
+      background: #d7dde5;
+    }
+    .detail-body {
+      padding: 22px;
+      display: grid;
+      align-content: start;
+      gap: 14px;
+    }
+    .detail-title { margin: 0; font-size: 24px; line-height: 1.2; }
+    .facts {
+      display: grid;
+      grid-template-columns: 120px minmax(0, 1fr);
+      gap: 8px 12px;
+      font-size: 14px;
+    }
+    .facts dt { color: var(--muted); font-weight: 700; }
+    .facts dd { margin: 0; overflow-wrap: anywhere; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .actions a, .actions button {
+      height: var(--tap);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 0 12px;
+      color: var(--ink);
+      background: var(--panel);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .actions a.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    /* ----- Responsive: tablet ----- */
+    @media (max-width: 1100px) {
+      .filters { grid-template-columns: minmax(180px, 1.6fr) repeat(3, 1fr) repeat(2, 1fr) repeat(2, 0.7fr) auto; }
+      .filters.has-district { grid-template-columns: minmax(180px, 1.6fr) repeat(4, 1fr) repeat(2, 1fr) repeat(2, 0.7fr) auto; }
+    }
+
+    /* ----- Responsive: small tablet / large phone ----- */
+    @media (max-width: 900px) {
+      .filters { grid-template-columns: 1fr 1fr; }
+      .filters.has-district { grid-template-columns: 1fr 1fr; }
+      .filters .field-search { grid-column: 1 / -1; }
+      .filters > #reset { grid-column: 1 / -1; }
+    }
+
+    /* ----- Responsive: mobile ----- */
+    @media (max-width: 640px) {
+      .bar { padding: 10px 12px; gap: 8px; }
+      h1 { font-size: 18px; }
+      .meta { font-size: 12px; }
+
+      .row-brand {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+      .global-controls #sort-select { display: none; }
+      .filter-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-width: 92px;
+        font-weight: 700;
+      }
+      .filter-toggle .badge-count {
+        background: var(--accent);
+        color: var(--accent-ink);
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 9px;
+        font-size: 11px;
+        display: inline-grid;
+        place-items: center;
+      }
+
+      /* Mobile preset chips become a horizontal scroll strip */
+      .row-presets {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        margin: 0 -12px;
+        padding-left: 12px;
+        padding-right: 12px;
+        scrollbar-width: none;
+      }
+      .row-presets::-webkit-scrollbar { display: none; }
+      .preset-label { display: none; }
+
+      /* Filters collapse into a panel */
+      .filters-wrap {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 200ms ease;
+      }
+      .filters-wrap.open {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+      }
+      .filters {
+        grid-template-columns: 1fr;
+        padding-top: 6px;
+      }
+      .filters.has-district { grid-template-columns: 1fr; }
+      .filters .field-min, .filters .field-max {
+        display: inline-block;
+      }
+      .filters .age-pair {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .filters .age-pair .field { min-width: 0; }
+
+      /* Sort moves inline at top of filter sheet on mobile */
+      .filters .mobile-sort-row {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .pills-bar { padding: 0 12px 10px; }
+
+      main { padding: 12px; }
+
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .name { min-height: 0; font-size: 13px; }
+
+      .detail { grid-template-columns: 1fr; }
+      .detail img { max-height: 58vh; }
+    }
+
+    @media (min-width: 641px) {
+      .mobile-sort-row { display: none; }
+    }
+
+    @media (min-width: 768px) and (max-width: 1100px) {
+      .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px; height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <!-- Row 1: brand + sort + saved view + (mobile) filter toggle -->
+      <div class="row-brand">
+        <div class="brand">
+          <h1>Critter Spotter</h1>
+          <div class="meta"><strong id="count">0</strong> <span id="count-suffix">portraits</span></div>
+        </div>
+        <div class="global-controls">
+          <div class="field" id="sort-select" style="min-width:170px;">
+            <label for="sort">Sort</label>
+            <select id="sort">
+              <option value="default">Default</option>
+              <option value="name-asc">Name (A–Z)</option>
+              <option value="name-desc">Name (Z–A)</option>
+              <option value="age-asc">Age (youngest first)</option>
+              <option value="age-desc">Age (oldest first)</option>
+              <option value="state-asc">State (A–Z)</option>
+              <option value="seniority">Seniority (placeholder)</option>
+            </select>
+          </div>
+          <div class="saved-view-wrap">
+            <label class="visually-hidden" for="saved-view-btn">Saved view</label>
+            <button id="saved-view-btn" class="saved-view-btn" type="button" aria-haspopup="menu" aria-expanded="false" title="Saved view">☆</button>
+            <div id="saved-view-menu" class="saved-view-menu" role="menu" hidden>
+              <button id="sv-save" role="menuitem" type="button">Save current view</button>
+              <button id="sv-load" role="menuitem" type="button">Load saved view</button>
+              <button id="sv-clear" role="menuitem" type="button">Clear saved view</button>
+            </div>
+          </div>
+          <button id="filter-toggle" class="filter-toggle" type="button" aria-expanded="false" aria-controls="filters">
+            Filters <span id="active-filter-count" class="badge-count" hidden>0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Row 2: quick-filter preset chips -->
+      <div class="row-presets" id="row-presets">
+        <span class="preset-label">Quick</span>
+        <button class="chip preset party-D" data-preset="senate-dems">
+          <span class="chip-dot"></span>Senate Dems
+        </button>
+        <button class="chip preset party-R" data-preset="senate-gop">
+          <span class="chip-dot"></span>Senate GOP
+        </button>
+        <button class="chip preset party-D" data-preset="house-dems">
+          <span class="chip-dot"></span>House Dems
+        </button>
+        <button class="chip preset party-R" data-preset="house-gop">
+          <span class="chip-dot"></span>House GOP
+        </button>
+        <button class="chip preset no-dot" data-preset="women-senate">
+          <span class="chip-dot"></span>Women in Senate
+        </button>
+        <button class="chip preset no-dot" data-preset="under-40">
+          <span class="chip-dot"></span>Under 40
+        </button>
+        <button class="chip preset no-dot" data-preset="over-70">
+          <span class="chip-dot"></span>Over 70
+        </button>
+      </div>
+
+      <!-- Row 3: filter inputs (collapsible on mobile) -->
+      <div class="filters-wrap" id="filters-wrap">
+        <div id="filters" class="filters">
+          <!-- Mobile-only sort field inline at top -->
+          <div class="field mobile-sort-row">
+            <label for="sort-mobile">Sort</label>
+            <select id="sort-mobile">
+              <option value="default">Default</option>
+              <option value="name-asc">Name (A–Z)</option>
+              <option value="name-desc">Name (Z–A)</option>
+              <option value="age-asc">Age (youngest first)</option>
+              <option value="age-desc">Age (oldest first)</option>
+              <option value="state-asc">State (A–Z)</option>
+              <option value="seniority">Seniority (placeholder)</option>
+            </select>
+          </div>
+
+          <div class="field field-search">
+            <label for="search">Search</label>
+            <div class="search-wrap">
+              <input id="search" type="search" autocomplete="off" placeholder="Name, state, seat (TX-23), or BioGuide ID">
+            </div>
+          </div>
+          <div class="field">
+            <label for="chamber">Chamber</label>
+            <select id="chamber">
+              <option value="">All</option>
+              <option value="House">House</option>
+              <option value="Senate">Senate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="state">State</label>
+            <select id="state">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="field" id="district-field" hidden>
+            <label for="district">District</label>
+            <select id="district">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="party">Party</label>
+            <select id="party">
+              <option value="">All</option>
+              <option value="D">Democrat</option>
+              <option value="R">Republican</option>
+              <option value="I">Independent</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sex">Sex</label>
+            <select id="sex">
+              <option value="">All</option>
+              <option value="F">Female</option>
+              <option value="M">Male</option>
+            </select>
+          </div>
+          <div class="age-pair">
+            <div class="field field-min">
+              <label for="min-age">Min Age</label>
+              <input id="min-age" type="number" inputmode="numeric" min="18" max="120" placeholder="Any">
+            </div>
+            <div class="field field-max">
+              <label for="max-age">Max Age</label>
+              <input id="max-age" type="number" inputmode="numeric" min="18" max="120" placeholder="Any">
+            </div>
+          </div>
+          <button id="reset" type="button">Reset</button>
+        </div>
+
+        <!-- Row 4: generation + caucus chip groups -->
+        <div class="bar" style="padding: 0; margin-top: 8px;">
+          <div class="row-chips">
+            <div class="chip-group" id="gen-group">
+              <span class="chip-group-label">Generation</span>
+              <button class="chip" data-gen="silent">Silent</button>
+              <button class="chip" data-gen="boomer">Boomer</button>
+              <button class="chip" data-gen="genx">Gen X</button>
+              <button class="chip" data-gen="millennial">Millennial</button>
+              <button class="chip" data-gen="genz">Gen Z</button>
+            </div>
+            <div class="chip-group" id="caucus-group" hidden>
+              <span class="chip-group-label">Caucus</span>
+              <button class="chip" data-caucus="D">with Democrats</button>
+              <button class="chip" data-caucus="R">with Republicans</button>
+              <button class="chip" data-caucus="none">Neither</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active-filter pills bar -->
+    <div class="pills-bar" id="pills-bar">
+      <div class="pills-summary"><strong id="pill-count">0</strong> <span class="muted">of <span id="pill-total">0</span></span></div>
+      <div id="pills" style="display:contents;"></div>
+      <button class="clear-all" id="clear-all" type="button">Clear all</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="grid" class="grid" aria-live="polite"></section>
+    <div id="empty" class="empty">No matching portraits.</div>
+  </main>
+
+  <div id="dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+    <article class="detail">
+      <img id="detail-photo" alt="">
+      <div class="detail-body">
+        <h2 id="detail-title" class="detail-title"></h2>
+        <dl class="facts">
+          <dt>Seat</dt><dd id="detail-seat"></dd>
+          <dt>Party</dt><dd id="detail-party"></dd>
+          <dt>Sex</dt><dd id="detail-sex"></dd>
+          <dt>Age</dt><dd id="detail-age"></dd>
+          <dt>Generation</dt><dd id="detail-gen"></dd>
+          <dt>BioGuide</dt><dd id="detail-bioguide"></dd>
+          <dt>Local file</dt><dd id="detail-path"></dd>
+        </dl>
+        <div class="actions">
+          <a id="detail-official" class="primary" href="#" target="_blank" rel="noreferrer">Profile</a>
+          <a id="detail-source" href="#" target="_blank" rel="noreferrer">Portrait Source</a>
+          <button id="close" type="button">Close</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <script src="data/current_members.js"></script>
+  <script>
+    /* ------------------------------------------------------------------
+       Constants
+    ------------------------------------------------------------------ */
+    const STATE_NAMES = {
+      AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",
+      CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",
+      HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",
+      KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",
+      MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",
+      NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",
+      NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",
+      OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",
+      SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",
+      VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",
+      DC:"District of Columbia",AS:"American Samoa",GU:"Guam",MP:"Northern Mariana Islands",
+      PR:"Puerto Rico",VI:"U.S. Virgin Islands"
+    };
+
+    const GENERATIONS = [
+      { key: "silent", label: "Silent", test: y => y <= 1945 },
+      { key: "boomer", label: "Boomer", test: y => y >= 1946 && y <= 1964 },
+      { key: "genx", label: "Gen X", test: y => y >= 1965 && y <= 1980 },
+      { key: "millennial", label: "Millennial", test: y => y >= 1981 && y <= 1996 },
+      { key: "genz", label: "Gen Z", test: y => y >= 1997 }
+    ];
+
+    const PRESETS = {
+      "senate-dems": { chamber: "Senate", party: "D" },
+      "senate-gop":  { chamber: "Senate", party: "R" },
+      "house-dems":  { chamber: "House",  party: "D" },
+      "house-gop":   { chamber: "House",  party: "R" },
+      "women-senate":{ chamber: "Senate", sex: "F" },
+      "under-40":    { maxAge: 39 },
+      "over-70":     { minAge: 71 }
+    };
+
+    const PARTY_NAME = { D: "Democrat", R: "Republican", I: "Independent" };
+    const SAVED_KEY  = "critterSpotter.savedView.v1";
+
+    /* ------------------------------------------------------------------
+       App state
+    ------------------------------------------------------------------ */
+    const filters = {
+      search: "",
+      chamber: "",
+      state: "",
+      district: "",
+      party: "",
+      sex: "",
+      minAge: "",
+      maxAge: "",
+      generations: new Set(),
+      caucuses: new Set(),
+      sort: "default"
+    };
+
+    const store = {
+      members: [],
+      ageAsOf: "",
+      filtered: []
+    };
+
+    /* ------------------------------------------------------------------
+       Elements
+    ------------------------------------------------------------------ */
+    const $ = sel => document.querySelector(sel);
+    const els = {
+      count: $("#count"), countSuffix: $("#count-suffix"),
+      search: $("#search"), chamber: $("#chamber"), state: $("#state"),
+      district: $("#district"), districtField: $("#district-field"),
+      party: $("#party"), sex: $("#sex"),
+      minAge: $("#min-age"), maxAge: $("#max-age"),
+      sort: $("#sort"), sortMobile: $("#sort-mobile"),
+      reset: $("#reset"),
+      filterToggle: $("#filter-toggle"),
+      filtersWrap: $("#filters-wrap"),
+      filters: $("#filters"),
+      grid: $("#grid"), empty: $("#empty"),
+      rowPresets: $("#row-presets"),
+      genGroup: $("#gen-group"), caucusGroup: $("#caucus-group"),
+      pillsBar: $("#pills-bar"), pills: $("#pills"),
+      pillCount: $("#pill-count"), pillTotal: $("#pill-total"),
+      clearAll: $("#clear-all"),
+      activeFilterCount: $("#active-filter-count"),
+      savedBtn: $("#saved-view-btn"), savedMenu: $("#saved-view-menu"),
+      svSave: $("#sv-save"), svLoad: $("#sv-load"), svClear: $("#sv-clear"),
+      dialog: $("#dialog"),
+      detailPhoto: $("#detail-photo"), detailTitle: $("#detail-title"),
+      detailSeat: $("#detail-seat"), detailParty: $("#detail-party"),
+      detailSex: $("#detail-sex"), detailAge: $("#detail-age"),
+      detailGen: $("#detail-gen"),
+      detailBioguide: $("#detail-bioguide"), detailPath: $("#detail-path"),
+      detailOfficial: $("#detail-official"), detailSource: $("#detail-source"),
+      close: $("#close")
+    };
+
+    /* ------------------------------------------------------------------
+       Helpers
+    ------------------------------------------------------------------ */
+    function normalize(v) { return String(v ?? "").toLowerCase(); }
+
+    function birthYear(m) {
+      if (!m.date_of_birth) return null;
+      const y = parseInt(m.date_of_birth.slice(0,4), 10);
+      return Number.isFinite(y) ? y : null;
+    }
+
+    function generationOf(m) {
+      const y = birthYear(m);
+      if (y == null) return null;
+      const g = GENERATIONS.find(g => g.test(y));
+      return g ? g.key : null;
+    }
+    function generationLabel(key) {
+      const g = GENERATIONS.find(g => g.key === key);
+      return g ? g.label : "";
+    }
+
+    function caucusOf(m) {
+      if (m.party !== "I") return null;
+      if (m.caucus_party === "D") return "D";
+      if (m.caucus_party === "R") return "R";
+      return "none";
+    }
+    function caucusLabel(key) {
+      if (key === "D") return "with Democrats";
+      if (key === "R") return "with Republicans";
+      return "Neither";
+    }
+
+    function partyClass(p) { return `badge party-${p || "I"}`; }
+    function sexLabel(s) { return s === "F" ? "Female" : s === "M" ? "Male" : ""; }
+
+    function isAtLarge(m) {
+      return m.chamber === "House" && (m.district === 0 || m.district == null);
+    }
+
+    function districtLabel(d) {
+      if (d === 0 || d == null) return "At-large";
+      return `District ${d}`;
+    }
+
+    function numberValue(input) {
+      const v = Number.parseInt(input.value, 10);
+      return Number.isFinite(v) ? v : null;
+    }
+
+    /* ------------------------------------------------------------------
+       Filtering + sorting
+    ------------------------------------------------------------------ */
+    function matches(m) {
+      const q = normalize(filters.search.trim());
+      if (q) {
+        const stateName = STATE_NAMES[m.state] || "";
+        const haystack = normalize([
+          m.full_name, m.first_name, m.last_name, m.bioguide_id,
+          m.seat, m.state, stateName, m.chamber
+        ].join(" "));
+        if (!haystack.includes(q)) return false;
+      }
+      if (filters.chamber && m.chamber !== filters.chamber) return false;
+      if (filters.state && m.state !== filters.state) return false;
+      if (filters.district !== "" && filters.state) {
+        const want = parseInt(filters.district, 10);
+        const have = m.district == null ? 0 : m.district;
+        if (have !== want) return false;
+      }
+      if (filters.party && m.party !== filters.party) return false;
+      if (filters.sex && m.sex !== filters.sex) return false;
+
+      const minAge = filters.minAge === "" ? null : parseInt(filters.minAge, 10);
+      const maxAge = filters.maxAge === "" ? null : parseInt(filters.maxAge, 10);
+      if (minAge != null && (!Number.isInteger(m.age) || m.age < minAge)) return false;
+      if (maxAge != null && (!Number.isInteger(m.age) || m.age > maxAge)) return false;
+
+      if (filters.generations.size > 0) {
+        const g = generationOf(m);
+        if (!g || !filters.generations.has(g)) return false;
+      }
+      if (filters.caucuses.size > 0) {
+        const c = caucusOf(m);
+        if (!c || !filters.caucuses.has(c)) return false;
+      }
+      return true;
+    }
+
+    function sortMembers(list) {
+      const arr = list.slice();
+      const sk = filters.sort;
+      const cmpStr = (a,b) => a.localeCompare(b, undefined, { sensitivity: "base" });
+      switch (sk) {
+        case "name-asc":  return arr.sort((a,b) => cmpStr(a.last_name||a.full_name, b.last_name||b.full_name));
+        case "name-desc": return arr.sort((a,b) => cmpStr(b.last_name||b.full_name, a.last_name||a.full_name));
+        case "age-asc":   return arr.sort((a,b) => (a.age ?? 999) - (b.age ?? 999));
+        case "age-desc":  return arr.sort((a,b) => (b.age ?? -1) - (a.age ?? -1));
+        case "state-asc": return arr.sort((a,b) =>
+          cmpStr(a.state||"", b.state||"") || ((a.district??0)-(b.district??0)));
+        case "seniority": return arr.sort((a,b) =>
+          cmpStr(a.bioguide_id||"", b.bioguide_id||""));
+        default:          return arr;
+      }
+    }
+
+    /* ------------------------------------------------------------------
+       Rendering
+    ------------------------------------------------------------------ */
+    function render() {
+      const result = sortMembers(store.members.filter(matches));
+      store.filtered = result;
+      els.count.textContent = result.length === store.members.length
+        ? `${result.length}` : `${result.length} / ${store.members.length}`;
+      els.empty.style.display = result.length ? "none" : "block";
+
+      const frag = document.createDocumentFragment();
+      for (const m of result) {
+        const card = document.createElement("article");
+        card.className = "card";
+        card.tabIndex = 0;
+        card.dataset.id = m.bioguide_id;
+        card.innerHTML = `
+          <img class="photo" src="${m.portrait_path}" alt="${m.full_name}" loading="lazy">
+          <div class="info">
+            <div class="name">${m.full_name}</div>
+            <div class="seat">
+              <span>${m.chamber === "Senate" ? "Senate" : ""}${m.chamber === "Senate" ? " · " : ""}${m.seat}</span>
+              <span class="${partyClass(m.party)}">${m.party || "I"}</span>
+            </div>
+            <div class="subline">Age ${Number.isInteger(m.age) ? m.age : "—"}${m.sex ? ` · ${m.sex}` : ""}</div>
+          </div>
+        `;
+        card.addEventListener("click", () => openDetail(m));
+        card.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openDetail(m);
+          }
+        });
+        frag.append(card);
+      }
+      els.grid.textContent = "";
+      els.grid.append(frag);
+
+      renderPills();
+      syncPresetActiveStates();
+      syncChipActiveStates();
+      updateDistrictVisibility();
+      updateCaucusVisibility();
+      updateSavedViewIndicator();
+      updateActiveFilterCount();
+      writeURL();
+    }
+
+    function renderPills() {
+      const pills = [];
+      if (filters.search)   pills.push({ key: "search",  label: `“${filters.search}”` });
+      if (filters.chamber)  pills.push({ key: "chamber", label: filters.chamber });
+      if (filters.state)    pills.push({ key: "state",   label: STATE_NAMES[filters.state] || filters.state });
+      if (filters.district !== "" && filters.state)
+        pills.push({ key: "district", label: districtLabel(parseInt(filters.district, 10)) });
+      if (filters.party)    pills.push({ key: "party",   label: PARTY_NAME[filters.party] || filters.party });
+      if (filters.sex)      pills.push({ key: "sex",     label: sexLabel(filters.sex) });
+      if (filters.minAge !== "") pills.push({ key: "minAge", label: `≥ ${filters.minAge}y` });
+      if (filters.maxAge !== "") pills.push({ key: "maxAge", label: `≤ ${filters.maxAge}y` });
+      for (const g of filters.generations) pills.push({ key: `gen:${g}`,   label: generationLabel(g) });
+      for (const c of filters.caucuses)    pills.push({ key: `caucus:${c}`,label: `Caucus: ${caucusLabel(c)}` });
+
+      els.pills.textContent = "";
+      for (const p of pills) {
+        const el = document.createElement("span");
+        el.className = "pill";
+        el.innerHTML = `${p.label} <button aria-label="Remove ${p.label}" data-key="${p.key}">×</button>`;
+        els.pills.append(el);
+      }
+      els.pillCount.textContent = store.filtered.length;
+      els.pillTotal.textContent = store.members.length;
+      els.pillsBar.classList.toggle("visible", pills.length > 0);
+    }
+
+    function updateDistrictVisibility() {
+      if (!filters.state) {
+        els.districtField.hidden = true;
+        els.filters.classList.remove("has-district");
+        if (filters.district !== "") filters.district = "";
+        return;
+      }
+      // Show districts for the selected state, House chamber only.
+      const districts = [...new Set(
+        store.members
+          .filter(m => m.state === filters.state && m.chamber === "House")
+          .map(m => m.district == null ? 0 : m.district)
+      )].sort((a,b) => a-b);
+
+      if (districts.length === 0) {
+        els.districtField.hidden = true;
+        els.filters.classList.remove("has-district");
+        return;
+      }
+      els.districtField.hidden = false;
+      els.filters.classList.add("has-district");
+
+      const current = els.district.value;
+      els.district.innerHTML = '<option value="">All</option>' +
+        districts.map(d => `<option value="${d}">${d === 0 ? "At-large" : `District ${d}`}</option>`).join("");
+      // restore selection if still valid
+      if (filters.district !== "" && districts.includes(parseInt(filters.district, 10))) {
+        els.district.value = filters.district;
+      } else {
+        els.district.value = "";
+        filters.district = "";
+      }
+    }
+
+    function updateCaucusVisibility() {
+      const show = filters.party === "I" || filters.caucuses.size > 0;
+      els.caucusGroup.hidden = !show;
+      if (!show) filters.caucuses.clear();
+    }
+
+    function syncPresetActiveStates() {
+      els.rowPresets.querySelectorAll("[data-preset]").forEach(btn => {
+        const preset = PRESETS[btn.dataset.preset];
+        const active = matchesPreset(preset);
+        btn.classList.toggle("is-active", active);
+      });
+    }
+
+    function matchesPreset(preset) {
+      // active iff every key in the preset matches the current filter exactly.
+      for (const [k, v] of Object.entries(preset)) {
+        if (k === "minAge" || k === "maxAge") {
+          if (String(filters[k]) !== String(v)) return false;
+        } else if (filters[k] !== v) return false;
+      }
+      return true;
+    }
+
+    function syncChipActiveStates() {
+      els.genGroup.querySelectorAll("[data-gen]").forEach(btn => {
+        btn.classList.toggle("is-active", filters.generations.has(btn.dataset.gen));
+      });
+      els.caucusGroup.querySelectorAll("[data-caucus]").forEach(btn => {
+        btn.classList.toggle("is-active", filters.caucuses.has(btn.dataset.caucus));
+      });
+    }
+
+    function updateActiveFilterCount() {
+      let n = 0;
+      if (filters.search) n++;
+      if (filters.chamber) n++;
+      if (filters.state) n++;
+      if (filters.district !== "") n++;
+      if (filters.party) n++;
+      if (filters.sex) n++;
+      if (filters.minAge !== "") n++;
+      if (filters.maxAge !== "") n++;
+      n += filters.generations.size;
+      n += filters.caucuses.size;
+      els.activeFilterCount.textContent = n;
+      els.activeFilterCount.hidden = n === 0;
+    }
+
+    /* ------------------------------------------------------------------
+       Detail dialog
+    ------------------------------------------------------------------ */
+    function openDetail(m) {
+      els.detailPhoto.src = m.portrait_path;
+      els.detailPhoto.alt = m.full_name;
+      els.detailTitle.textContent = m.full_name;
+      els.detailSeat.textContent = `${m.chamber} ${m.seat}`;
+      els.detailParty.textContent = PARTY_NAME[m.party] || m.party || "";
+      els.detailSex.textContent = sexLabel(m.sex);
+      els.detailAge.textContent = Number.isInteger(m.age)
+        ? `${m.age} as of ${store.ageAsOf || "export"}`
+        : "Unknown";
+      const gk = generationOf(m);
+      els.detailGen.textContent = gk ? generationLabel(gk) : "—";
+      els.detailBioguide.textContent = m.bioguide_id;
+      els.detailPath.textContent = m.portrait_path;
+      els.detailOfficial.href = m.official_url || "#";
+      els.detailSource.href = m.portrait_url || "#";
+      els.dialog.classList.add("open");
+    }
+
+    function closeDetail() {
+      els.dialog.classList.remove("open");
+      els.detailPhoto.removeAttribute("src");
+    }
+
+    /* ------------------------------------------------------------------
+       Filter mutation helpers
+    ------------------------------------------------------------------ */
+    function pullFromInputs() {
+      filters.search   = els.search.value;
+      filters.chamber  = els.chamber.value;
+      filters.state    = els.state.value;
+      filters.district = els.district.value;
+      filters.party    = els.party.value;
+      filters.sex      = els.sex.value;
+      filters.minAge   = els.minAge.value;
+      filters.maxAge   = els.maxAge.value;
+    }
+
+    function pushToInputs() {
+      els.search.value   = filters.search;
+      els.chamber.value  = filters.chamber;
+      els.state.value    = filters.state;
+      // district handled in updateDistrictVisibility
+      els.party.value    = filters.party;
+      els.sex.value      = filters.sex;
+      els.minAge.value   = filters.minAge;
+      els.maxAge.value   = filters.maxAge;
+      els.sort.value     = filters.sort;
+      els.sortMobile.value = filters.sort;
+    }
+
+    function resetFilters() {
+      filters.search = ""; filters.chamber = ""; filters.state = "";
+      filters.district = ""; filters.party = ""; filters.sex = "";
+      filters.minAge = ""; filters.maxAge = "";
+      filters.generations.clear();
+      filters.caucuses.clear();
+      filters.sort = "default";
+      pushToInputs();
+      render();
+    }
+
+    function applyPreset(key) {
+      const preset = PRESETS[key];
+      if (!preset) return;
+      if (matchesPreset(preset)) {
+        // Toggle off: clear just the keys this preset set.
+        for (const k of Object.keys(preset)) {
+          filters[k] = "";
+        }
+      } else {
+        // Set the preset's keys. Don't clear unrelated filters? Spec says
+        // "Clicking a chip applies that combination". We'll set its keys and
+        // clear conflicting common ones (chamber/party/sex/age) for clarity.
+        filters.chamber = preset.chamber ?? "";
+        filters.party   = preset.party   ?? "";
+        filters.sex     = preset.sex     ?? "";
+        filters.minAge  = preset.minAge != null ? String(preset.minAge) : "";
+        filters.maxAge  = preset.maxAge != null ? String(preset.maxAge) : "";
+      }
+      pushToInputs();
+      render();
+    }
+
+    /* ------------------------------------------------------------------
+       URL state
+    ------------------------------------------------------------------ */
+    function writeURL() {
+      const p = new URLSearchParams();
+      if (filters.search)   p.set("q", filters.search);
+      if (filters.chamber)  p.set("chamber", filters.chamber);
+      if (filters.state)    p.set("state", filters.state);
+      if (filters.district !== "") p.set("district", filters.district);
+      if (filters.party)    p.set("party", filters.party);
+      if (filters.sex)      p.set("sex", filters.sex);
+      if (filters.minAge !== "") p.set("min", filters.minAge);
+      if (filters.maxAge !== "") p.set("max", filters.maxAge);
+      if (filters.generations.size) p.set("gen", [...filters.generations].join(","));
+      if (filters.caucuses.size)    p.set("caucus", [...filters.caucuses].join(","));
+      if (filters.sort && filters.sort !== "default") p.set("sort", filters.sort);
+      const qs = p.toString();
+      const url = qs ? `?${qs}` : location.pathname;
+      history.replaceState(null, "", url + location.hash);
+    }
+
+    function readURL() {
+      const p = new URLSearchParams(location.search);
+      filters.search   = p.get("q") || "";
+      filters.chamber  = p.get("chamber") || "";
+      filters.state    = p.get("state") || "";
+      filters.district = p.get("district") ?? "";
+      filters.party    = p.get("party") || "";
+      filters.sex      = p.get("sex") || "";
+      filters.minAge   = p.get("min") || "";
+      filters.maxAge   = p.get("max") || "";
+      filters.generations = new Set((p.get("gen") || "").split(",").filter(Boolean));
+      filters.caucuses    = new Set((p.get("caucus") || "").split(",").filter(Boolean));
+      filters.sort = p.get("sort") || "default";
+    }
+
+    /* ------------------------------------------------------------------
+       Saved view (localStorage)
+    ------------------------------------------------------------------ */
+    function serializeFilters() {
+      return {
+        search: filters.search, chamber: filters.chamber, state: filters.state,
+        district: filters.district, party: filters.party, sex: filters.sex,
+        minAge: filters.minAge, maxAge: filters.maxAge,
+        generations: [...filters.generations], caucuses: [...filters.caucuses],
+        sort: filters.sort
+      };
+    }
+    function loadSerialized(obj) {
+      filters.search   = obj.search ?? "";
+      filters.chamber  = obj.chamber ?? "";
+      filters.state    = obj.state ?? "";
+      filters.district = obj.district ?? "";
+      filters.party    = obj.party ?? "";
+      filters.sex      = obj.sex ?? "";
+      filters.minAge   = obj.minAge ?? "";
+      filters.maxAge   = obj.maxAge ?? "";
+      filters.generations = new Set(obj.generations || []);
+      filters.caucuses    = new Set(obj.caucuses || []);
+      filters.sort        = obj.sort || "default";
+    }
+
+    function getSaved() {
+      try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "null"); }
+      catch { return null; }
+    }
+    function setSaved(view) {
+      if (view) localStorage.setItem(SAVED_KEY, JSON.stringify(view));
+      else localStorage.removeItem(SAVED_KEY);
+    }
+    function updateSavedViewIndicator() {
+      const has = !!getSaved();
+      els.savedBtn.textContent = has ? "★" : "☆";
+      els.savedBtn.classList.toggle("has-saved", has);
+      els.savedBtn.setAttribute("title", has ? "Saved view (click to manage)" : "Save current view");
+      els.svLoad.disabled = !has;
+      els.svClear.disabled = !has;
+    }
+    function toggleSavedMenu(force) {
+      const open = force ?? els.savedMenu.hidden;
+      els.savedMenu.hidden = !open;
+      els.savedBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    /* ------------------------------------------------------------------
+       Event wiring
+    ------------------------------------------------------------------ */
+    function attachInputHandlers() {
+      const onChange = () => { pullFromInputs(); render(); };
+      for (const el of [els.search, els.chamber, els.state, els.district, els.party,
+                        els.sex, els.minAge, els.maxAge]) {
+        el.addEventListener("input", onChange);
+        el.addEventListener("change", onChange);
+      }
+      const onSort = (val) => { filters.sort = val; els.sort.value = val; els.sortMobile.value = val; render(); };
+      els.sort.addEventListener("change", () => onSort(els.sort.value));
+      els.sortMobile.addEventListener("change", () => onSort(els.sortMobile.value));
+
+      els.reset.addEventListener("click", resetFilters);
+      els.clearAll.addEventListener("click", resetFilters);
+
+      // Preset chips
+      els.rowPresets.addEventListener("click", e => {
+        const btn = e.target.closest("[data-preset]");
+        if (!btn) return;
+        applyPreset(btn.dataset.preset);
+      });
+
+      // Generation chips
+      els.genGroup.addEventListener("click", e => {
+        const btn = e.target.closest("[data-gen]");
+        if (!btn) return;
+        const k = btn.dataset.gen;
+        if (filters.generations.has(k)) filters.generations.delete(k);
+        else filters.generations.add(k);
+        render();
+      });
+
+      // Caucus chips
+      els.caucusGroup.addEventListener("click", e => {
+        const btn = e.target.closest("[data-caucus]");
+        if (!btn) return;
+        const k = btn.dataset.caucus;
+        if (filters.caucuses.has(k)) filters.caucuses.delete(k);
+        else filters.caucuses.add(k);
+        render();
+      });
+
+      // Pill remove
+      els.pills.addEventListener("click", e => {
+        const btn = e.target.closest("button[data-key]");
+        if (!btn) return;
+        const key = btn.dataset.key;
+        if (key === "search")   { filters.search = ""; els.search.value = ""; }
+        else if (key === "chamber"){ filters.chamber = ""; els.chamber.value = ""; }
+        else if (key === "state")  { filters.state = ""; filters.district = ""; els.state.value = ""; }
+        else if (key === "district"){ filters.district = ""; }
+        else if (key === "party")  { filters.party = ""; els.party.value = ""; filters.caucuses.clear(); }
+        else if (key === "sex")    { filters.sex = ""; els.sex.value = ""; }
+        else if (key === "minAge") { filters.minAge = ""; els.minAge.value = ""; }
+        else if (key === "maxAge") { filters.maxAge = ""; els.maxAge.value = ""; }
+        else if (key.startsWith("gen:"))    filters.generations.delete(key.slice(4));
+        else if (key.startsWith("caucus:")) filters.caucuses.delete(key.slice(7));
+        render();
+      });
+
+      // Filter sheet toggle (mobile)
+      els.filterToggle.addEventListener("click", () => {
+        const open = !els.filtersWrap.classList.contains("open");
+        els.filtersWrap.classList.toggle("open", open);
+        els.filterToggle.setAttribute("aria-expanded", open ? "true" : "false");
+        els.filterToggle.firstChild.textContent = open ? "Close " : "Filters ";
+      });
+
+      // Saved view
+      els.savedBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        toggleSavedMenu();
+      });
+      document.addEventListener("click", e => {
+        if (!els.savedMenu.hidden && !els.savedMenu.contains(e.target) && e.target !== els.savedBtn) {
+          toggleSavedMenu(false);
+        }
+      });
+      els.svSave.addEventListener("click", () => {
+        setSaved(serializeFilters());
+        toggleSavedMenu(false);
+        updateSavedViewIndicator();
+      });
+      els.svLoad.addEventListener("click", () => {
+        const v = getSaved();
+        if (!v) return;
+        loadSerialized(v);
+        pushToInputs();
+        render();
+        toggleSavedMenu(false);
+      });
+      els.svClear.addEventListener("click", () => {
+        setSaved(null);
+        toggleSavedMenu(false);
+        updateSavedViewIndicator();
+      });
+
+      // Detail dialog
+      els.close.addEventListener("click", closeDetail);
+      els.dialog.addEventListener("click", e => { if (e.target === els.dialog) closeDetail(); });
+      window.addEventListener("keydown", e => {
+        if (e.key === "Escape") {
+          if (els.dialog.classList.contains("open")) closeDetail();
+          else if (!els.savedMenu.hidden) toggleSavedMenu(false);
+          else if (els.filtersWrap.classList.contains("open")) els.filterToggle.click();
+        }
+      });
+    }
+
+    function populateStates() {
+      const states = [...new Set(store.members.map(m => m.state))].sort();
+      for (const code of states) {
+        const opt = document.createElement("option");
+        opt.value = code;
+        opt.textContent = `${code} — ${STATE_NAMES[code] || code}`;
+        els.state.append(opt);
+      }
+    }
+
+    /* ------------------------------------------------------------------
+       Init
+    ------------------------------------------------------------------ */
+    async function init() {
+      let payload = window.CRITTER_SPOTTER_DATA;
+      if (!payload) {
+        const r = await fetch("data/current_members.json", { cache: "no-store" });
+        if (!r.ok) throw new Error(`Unable to load data: ${r.status}`);
+        payload = await r.json();
+      }
+      store.members = payload.members || [];
+      store.ageAsOf = payload.age_as_of || "";
+      populateStates();
+      readURL();
+      pushToInputs();
+      attachInputHandlers();
+      render();
+
+      // Open the mobile filter sheet on load if requested via URL (used by previews).
+      if (new URLSearchParams(location.search).get("filters") === "open") {
+        els.filtersWrap.classList.add("open");
+        els.filterToggle.setAttribute("aria-expanded", "true");
+        if (els.filterToggle.firstChild) els.filterToggle.firstChild.textContent = "Close ";
+      }
+    }
+
+    init().catch(err => {
+      els.count.textContent = "0";
+      els.empty.textContent = err.message;
+      els.empty.style.display = "block";
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
